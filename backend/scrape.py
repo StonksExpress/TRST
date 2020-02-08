@@ -6,7 +6,7 @@ import re
 
 
 
-def scraping(websiteName):
+def scrape(websiteName):
     response = requests.get(websiteName)
     soup = BeautifulSoup(response.content, "html.parser")
     elements=[]
@@ -39,7 +39,7 @@ def scraping(websiteName):
         newssite_attrs = {'aria-label':re.compile('Search news from .*')}
         date_tag = 'span'
     else:
-        print("no matching website")
+        print("not predefined website")
 
     # with open("temp.txt", 'w') as file:
     #     file.write(soup.prettify().encode('utf-8'))
@@ -65,7 +65,7 @@ def elements_print(elements):
 
 
 websiteName = sys.argv[1]
-elements = scraping(websiteName)
+elements = scrape(websiteName)
 elements_print(elements)
 
 #headline = driver.find_element_by_class_name('fc-container--rolled-up-hide fc-container body')
