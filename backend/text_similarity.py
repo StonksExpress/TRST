@@ -1,18 +1,19 @@
 import tensorflow as tf
 import tensorflow_hub as hub
-mport sklearn.metrics.pairwise as pw
+import sklearn.metrics.pairwise as pw
+import numpy as np
 
 class embeddings:
     USE_mod_URL = "https://tfhub.dev/google/universal-sentence-encoder/2"
     def __init__(self):
         self.embed = hub.Module(module_url)
 
-    def get_USE_embedding(self,_documents):
+    def USE_embedding(self,_documents):
         #takes multiple documents (ie a list of strings)
         #
-        if (isinstance(_documents, str)) documents = [_documents]
-        else documents=_documents
-        document_sentences = [document.strip().split('.') for document in documents
+        if isinstance(_documents, str): documents = [_documents]
+        else: documents =_documents
+        document_sentences = [document.strip().split('.') for document in documents]
 
         g = tf.Graph():
             similarity_input_placeholder = tf.placeholder(dtype=tf.string, shape=[None])
@@ -35,5 +36,9 @@ class embeddings:
         document_sentence_embeddings = session.run(embedded_text, feed_dict={text_input: document_sentences})
         return document_sentence_embeddings
 
+    def cosine_embed_similarity(embeddings1, embeddings2):
+        #return pw.cosine_similarity(embeddings1, embeddings2)
 
-    def cosine_similarity():
+        arr_big, arr_small = (np.array(embeddings1),np.array(embeddings2)) if len(embeddings1) > len(embeddings2) else (np.array(embeddings2),np.array(embeddings1))
+        similarities = [max(arr_big,key=lambda big_embed: 1 - spatial.distance.cosine(big_embed, small_embed)) for small_embed in arr_small]
+        
