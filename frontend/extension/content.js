@@ -5,7 +5,6 @@ function handlePageAPIInfo(data) {
 
 (() => {
     chrome.runtime.sendMessage( {"type": "reset"} );
-    chrome.pageAction.show(chrome.tab.id);
     $.get(
         "http://ereshchenko.com:80/api/testSite",
         {"site": document.location.href},
