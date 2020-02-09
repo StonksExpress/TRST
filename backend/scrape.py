@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import sys
 import requests
 import re
+import newspaper import Article
 
 def scrape(websiteName):
     response = requests.get(websiteName)
@@ -37,6 +38,8 @@ def scrape(websiteName):
         date_tag = 'span'
     else:
         print("not predefined website")
+        article = Article(websiteName)
+        article.download()
         for a in soup.findAll('p'):
             elements.append(a.text)
         return elements
