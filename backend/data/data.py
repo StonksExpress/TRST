@@ -32,8 +32,7 @@ class Source:
         try:
             cursor.execute(f"SELECT Source.url, Source.trust FROM Source")
             fetched = cursor.fetchone()
-            if not fetched:
-                return None
+            if not fetched: return
             (url, trust) = cursor.fetchone()
             return Source(url, trust)
         finally:
@@ -56,7 +55,9 @@ class Document:
         cursor = database.cursor()
         try:
             cursor.execute("SELECT Document.url, Document.vectors, Document.time, Source.url, Source.trust FROM Document WHERE Document.source = Source.source")
-            (url, vector, time, source_url, source_trust) = cursor.fetchone()
+            fetched = cursor.fetchone()
+            if not fetched: return
+            (url, vector, time, source_url, source_trust) = fetched
             return cls(Source(source_url, source_trust), url, time, (v.split(",") for v in vector.split("|")))
         finally:
             cursor.close()
@@ -88,12 +89,14 @@ class Classification:
         cursor = database.cursor()
         try:
             cursor.execute(
-                f"""SELECT Classification.url, Classification.trust, Source.url, Source.trust
+                f"""SELECT Classification.url, Classification.trust, Classification.time, Source.url, Source.trust
                 FROM Classification, Source 
                 WHERE Classification.source == Source.url AND Classification.url = \"{url}\""""
                 )
-            (url, trust, source, source_trust) = cursor.fetchone()
-            return cls(Source(source, Trust(int(source_trust))), url, Trust(int(trust)))
+            fetched = cursor.fetchone()
+            if not fetched: return
+            (url, trust, time, source, source_trust) = fetched
+            return cls(Source(source, Trust(int(source_trust))), url, Trust(int(trust)), int(time))
         finally:
             cursor.close()
 
@@ -102,12 +105,12 @@ class Classification:
         cursor = database.cursor()
         try:
             cursor.execute(
-                """SELECT Classification.url, Classification.trust, Source.url, Source.trust
+                """SELECT Classification.url, Classification.trust, Classification.time, Source.url, Source.trust
                 FROM Classification, Source 
                 WHERE Classification.source == Source.url"""
                 )
-            for (url, trust, source, source_trust) in cursor.fetchall():
-                yield cls(Source(source, Trust(int(source_trust))), url, Trust(int(trust)))
+            for (url, trust, time, source, source_trust) in cursor.fetchall():
+                yield cls(Source(source, Trust(int(source_trust))), url, Trust(int(trust)), int(time))
         finally:
             cursor.close()
 
@@ -116,7 +119,7 @@ class Classification:
         cursor = database.cursor()
         try:
             cursor.execute(f"INSERT INTO Classification(source, url, trust, time) VALUES ({source}, {url}, {trust}, {time})")
-            db.commit()
-            return cls(source, url, time, vector)
+            database.commit()
+            return cls(source, url, time, time)
         finally:
             cursor.close()
