@@ -2,8 +2,18 @@ let cvs = document.getElementById("gauge");
 let ctx = cvs.getContext("2d");
 const maxFrames = 100;
 
+let lastVal = 0;
+
 const img = new Image;
 img.src = "http://localhost:8000/arrow.svg";
+
+function get(url, callback) {
+    let xml = new XMLHttpRequest();
+    xml.open(`GET`, url, true);
+    xml.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xml.onload = () => callback(xml.status, xml.responseText);
+    xml.send(null);
+}
 
 function drawCirlce(x, y, r, colour) {
     ctx.beginPath();
@@ -55,11 +65,13 @@ function drawNumber(number) {
 
 function animateScale(scale, frame) {
     if (frame === 0) {
+        lastVal = scale;
         return;
     }
-    const angle = ((100 - frame) / 100) * scale;
-    const red = 255 - (scale * 255) * ((maxFrames - frame) / maxFrames);
-    const green = (scale * 255) * ((maxFrames - frame) / maxFrames);
+    const delta = scale - lastVal;
+    const angle = delta * ((maxFrames - frame) / maxFrames) + lastVal;
+    const red = (1 - angle) * 255;
+    const green = angle * 255;
     requestAnimationFrame(() => {
         drawScale(angle, `rgb(${red}, ${green}, 0)`);
         drawNumber(scale);
@@ -67,6 +79,17 @@ function animateScale(scale, frame) {
     });
 }
 
+function drawGauge() {
+    get("http://localhost:5000/api/testSite?site=yeet", (status, text) => {
+        if (status !== 200) {
+            console.log(`API error`);
+            return
+        }
+        let json = JSON.parse(text);
+        animateScale(json.trust, 100);
+    });
+}
+
 img.onload = () => {
-    animateScale(0.9, 100);
+    animateScale(0, 1);
 }
