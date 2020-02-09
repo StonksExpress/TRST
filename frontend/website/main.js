@@ -81,7 +81,7 @@ function animateScale(scale, frame) {
 }
 
 function drawGauge() {
-    get(`http://ereshchenko.com/api/testSite?site=${$("#input").val()}`, (status, text) => {
+    get(`http://localhost:80/api/testSite?site=${$("#input").val()}`, (status, text) => {
         if (status !== 200) {
             console.log(`API error`);
             return

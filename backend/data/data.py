@@ -1,10 +1,10 @@
 from typing import NewType, List
 import sqlite3
-import npumpy as np
+import numpy as np
 
 Trust = NewType('Trust', float)
 
-database = sqlite3.connect('data.db')
+database = sqlite3.connect('data.db', check_same_thread=False)
 
 def configure_db():
     c = database.cursor()
@@ -70,7 +70,7 @@ class Document:
             fetched = cursor.fetchone()
             if not fetched: return
             (url, vector, time, source_url, source_trust) = fetched
-            return cls(Source(source_url, source_trust), url, time, np.array(([float(c) for c in v.split(",")] for v in vector.split("|")),dtype=np.float32)
+            return cls(Source(source_url, source_trust), url, time, np.array(([float(c) for c in v.split(",")] for v in vector.split("|")),dtype=np.float32))
         finally:
             cursor.close()
 
