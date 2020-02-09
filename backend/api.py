@@ -13,4 +13,5 @@ def get():
     site = request.args.get("site")
     return {"trust": round(random.random(), 2), "reasons": ["site1", "site2", "site3"], "site": site}
 
-app.run(host='0.0.0.0')
+
+app.run(host='0.0.0.0', port=80)
