@@ -80,6 +80,9 @@ def total_similarity(timestamp,embedding,embeddings,embeddings_times,sf_norm=0.1
     scaled_similarities = [x*y for (x,y) in zip(left_data+right_data,norm_scaling_left+norm_scaling_right)]
     scaled_similarities = [x*time_scaling_func(y) for (x,y) in zip(scaled_similarities,left_time_diffs+right_time_diffs)]
 
+    # TODO: return something
+    # scaled similarities are the exponential curved and time density scaled values
+    # results similarity is simply the max pairwise similarities between each document pair 
 def get_score(url):
     #check if present in db
         #return db value if true
