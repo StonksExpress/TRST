@@ -14,7 +14,7 @@ def scrapeAnalyse(url, isGeneral, keywords):
         soup = BeautifulSoup(response.content, "html.parser")
 
         for index, link in enumerate(soup.findAll('div', attrs={'class':'NiLAwe'})):
-            if index >= 3:
+            if index >= 2:
                 break
             children = link.findChildren('a', recursive=False)
             for child in children:
@@ -46,7 +46,7 @@ def scrapeAnalyse(url, isGeneral, keywords):
         soup = BeautifulSoup(response.content, "html.parser")
 
         for index, link in enumerate(soup.findAll('div', attrs={'class':'news-card newsitem cardcommon'})):
-            if index >= 3:
+            if index >= 2:
                 break
             news_url = link.get('url')
             article = Article(news_url)
@@ -65,7 +65,7 @@ def scrapeAnalyse(url, isGeneral, keywords):
         article.parse()
         article.nlp()
         keywords = article.keywords
-        return "+".join(keywords)
+        return (article.text, "+".join(keywords), article.publish_date)
 
 my_data = scrapeAnalyse(None, True, "ciara+storm")
 for el in my_data:
