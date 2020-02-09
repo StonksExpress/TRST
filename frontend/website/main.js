@@ -80,13 +80,18 @@ function animateScale(scale, frame) {
 }
 
 function drawGauge() {
-    get("http://localhost:5000/api/testSite?site=yeet", (status, text) => {
+    get(`http://ereshchenko.com/api/testSite?site=${$("#input").val()}`, (status, text) => {
         if (status !== 200) {
             console.log(`API error`);
             return
         }
         let json = JSON.parse(text);
         animateScale(json.trust, 100);
+        let ul = $("#reasons");
+        ul.html("");
+        for (const item of json.reasons) {
+            ul.append(`<li>${item}</li>`);
+        }
     });
 }
 

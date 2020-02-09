@@ -32,12 +32,22 @@ class Source:
         try:
             cursor.execute(f"SELECT Source.url, Source.trust FROM Source")
             fetched = cursor.fetchone()
-            if not fetched:
-                return None
+            if not fetched: return
             (url, trust) = cursor.fetchone()
             return Source(url, trust)
         finally:
             cursor.close()
+
+    @classmethod
+    def new(cls, url: str, trust: Trust):
+        cursor = database.cursor()
+        try:
+            cursor.execute(f"INSERT INTO Source (url, trust) VALUES (\"{url}\", \"{trust}\")")
+            database.commit()
+            return cls(url, trust)
+        finally:
+            cursor.close()
+
 
 class Document:
     url: str
@@ -55,8 +65,10 @@ class Document:
     def retrieve(cls, url):
         cursor = database.cursor()
         try:
-            cursor.execute("SELECT Document.url, Document.vectors, Document.time, Source.url, Source.trust FROM Document WHERE Document.source = Source.source")
-            (url, vector, time, source_url, source_trust) = cursor.fetchone()
+            cursor.execute("SELECT Document.url, Document.vectors, Document.time, Source.url, Source.trust FROM Document, Source WHERE Document.source = Source.url")
+            fetched = cursor.fetchone()
+            if not fetched: return
+            (url, vector, time, source_url, source_trust) = fetched
             return cls(Source(source_url, source_trust), url, time, (v.split(",") for v in vector.split("|")))
         finally:
             cursor.close()
@@ -65,7 +77,9 @@ class Document:
     def new(cls, source, url, time, vectors):
         cursor = database.cursor()
         try:
-            cursor.execute(f"INSERT INTO Document(url, source, time, vectors) VALUES ({url}, {source}, {time},{'|'.join(','.join(v) for v in vectors)})")
+            cursor.execute(f"""INSERT INTO Document(url, source, time, vectors) 
+                                VALUES ("{url}", "{source}", "{time}", "{'|'.join(','.join(str(e) for e in v) for v in vectors)}")
+                                """)
             database.commit()
             return cls(source, url, time, vectors)
         finally:
@@ -88,12 +102,14 @@ class Classification:
         cursor = database.cursor()
         try:
             cursor.execute(
-                f"""SELECT Classification.url, Classification.trust, Source.url, Source.trust
+                f"""SELECT Classification.url, Classification.trust, Classification.time, Source.url, Source.trust
                 FROM Classification, Source 
                 WHERE Classification.source == Source.url AND Classification.url = \"{url}\""""
                 )
-            (url, trust, source, source_trust) = cursor.fetchone()
-            return cls(Source(source, Trust(int(source_trust))), url, Trust(int(trust)))
+            fetched = cursor.fetchone()
+            if not fetched: return
+            (url, trust, time, source, source_trust) = fetched
+            return cls(Source(source, Trust(float(source_trust))), url, Trust(float(trust)), int(time))
         finally:
             cursor.close()
 
@@ -102,12 +118,12 @@ class Classification:
         cursor = database.cursor()
         try:
             cursor.execute(
-                """SELECT Classification.url, Classification.trust, Source.url, Source.trust
+                """SELECT Classification.url, Classification.trust, Classification.time, Source.url, Source.trust
                 FROM Classification, Source 
                 WHERE Classification.source == Source.url"""
                 )
-            for (url, trust, source, source_trust) in cursor.fetchall():
-                yield cls(Source(source, Trust(int(source_trust))), url, Trust(int(trust)))
+            for (url, trust, time, source, source_trust) in cursor.fetchall():
+                yield cls(Source(source, Trust(float(source_trust))), url, Trust(float(trust)), int(time))
         finally:
             cursor.close()
 
@@ -115,8 +131,10 @@ class Classification:
     def new(cls, source, url, trust, time):
         cursor = database.cursor()
         try:
-            cursor.execute(f"INSERT INTO Classification(source, url, trust, time) VALUES ({source}, {url}, {trust}, {time})")
-            db.commit()
-            return cls(source, url, time, vector)
+            cursor.execute(f"""INSERT INTO Classification(source, url, trust, time) 
+                            VALUES ("{source}", "{url}", "{trust}", "{time}")
+                            """)
+            database.commit()
+            return cls(source, url, time, time)
         finally:
             cursor.close()
