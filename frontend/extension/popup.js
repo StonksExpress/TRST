@@ -1,21 +1,21 @@
 var title = document.querySelector("#title");
 var info = document.querySelector("#info");
+var body = document.querySelector("body");
 
 var colours = {
-    "green": "#20e040",
-    "gray": "#cccccc",
+    "green": "#50a050",
+    "gray": "#909090",
     "red": "#e04040",
-    "orange": "#ffb62e"
+    "orange": "#ef761e"
 }
 
 window.onload = function() {
     chrome.storage.local.get(['data'], function(result) {
         let data = result.data;
         title.innerHTML = data.title;
-        title.style.color = colours[data.color];
-        info.style.color = colours[data.color];
-        info.innerHTML = ""
-        for (let entry of data.info) {
+        body.style.backgroundColor = colours[data.color];
+        info.innerHTML = "";
+        for (let entry of data.reasons) {
             var node = document.createElement("li");
             node.appendChild(document.createTextNode(entry));                              
             info.appendChild(node);

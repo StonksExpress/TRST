@@ -4,17 +4,43 @@ function handlePageAPIInfo(data) {
 }
 
 (() => {
-    // $.get(
-    //     "localhost",
-    //     {"url": document.location.href},
-    //     (data) => handlePageAPIInfo(JSON.parse(data))
-    // );
+    chrome.runtime.sendMessage( {"type": "reset"} );
+    $.get(
+        "http://ereshchenko.com:80/api/testSite",
+        {"site": document.location.href},
+        (data) => {
+            if (data.trust < 0.3) {
+                data.color = "red";
+                data.title = "Very Low";
+            } else if (data.trust < 0.5) {
+                data.color = "orange";
+                data.title = "Low";
+            } else if (data.trust < 0.7) {
+                data.color = "gray";
+                data.title = "Insufficient";
+            } else {
+                data.color = "green";
+                data.title = "Higher";
+            }
+            handlePageAPIInfo(data);
 
-    if (document.location.host == "developer.chrome.com") {
-        handlePageAPIInfo({
-            color: "green",
-            title: "Trusted",
-            info: ["Guardian blah", "trust matrix 52.1%"]
-        })
-    }
+            title.innerHTML = data.title;
+            title.style.color = colours[data.color];
+            info.style.color = colours[data.color];
+            info.innerHTML = ""
+            for (let entry of data.reasons) {
+                var node = document.createElement("li");
+                node.appendChild(document.createTextNode(entry));                              
+                info.appendChild(node);
+            }
+        }
+    );
+
+    // if (document.location.host == "developer.chrome.com") {
+    //     handlePageAPIInfo({
+    //         color: "green",
+    //         title: "Trusted",
+    //         info: ["Guardian blah", "trust matrix 52.1%"]
+    //     })
+    // }
 })()
