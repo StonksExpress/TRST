@@ -39,7 +39,7 @@ def scrape(websiteName):
     else:
         print("not predefined website")
         article = Article(websiteName)
-        article.download()
+        article.download
         for a in soup.findAll('p'):
             elements.append(a.text)
         return elements
