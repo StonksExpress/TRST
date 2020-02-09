@@ -5,6 +5,7 @@ function handlePageAPIInfo(data) {
 
 (() => {
     chrome.runtime.sendMessage( {"type": "reset"} );
+    chrome.pageAction.show(chrome.tab.id);
     $.get(
         "http://ereshchenko.com:80/api/testSite",
         {"site": document.location.href},
@@ -27,7 +28,7 @@ function handlePageAPIInfo(data) {
             title.innerHTML = data.title;
             title.style.color = colours[data.color];
             info.style.color = colours[data.color];
-            info.innerHTML = ""
+            info.innerHTML = "";
             for (let entry of data.reasons) {
                 var node = document.createElement("li");
                 node.appendChild(document.createTextNode(entry));                              
@@ -35,12 +36,4 @@ function handlePageAPIInfo(data) {
             }
         }
     );
-
-    // if (document.location.host == "developer.chrome.com") {
-    //     handlePageAPIInfo({
-    //         color: "green",
-    //         title: "Trusted",
-    //         info: ["Guardian blah", "trust matrix 52.1%"]
-    //     })
-    // }
-})()
+})();
