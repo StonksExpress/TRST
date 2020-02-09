@@ -13,15 +13,5 @@ def get():
     site = request.args.get("site")
     return {"trust": round(random.random(), 2), "reasons": ["site1", "site2", "site3"], "site": site}
 
-app.run(host='0.0.0.0')
 
-
-#database of news websites (perhaps if they are trusted?)
-#   related to a database for each site, containing article entries of:
-    #   article identifier
-    #   article embedding
-    #   article publish timestamp
-    #   logical clock of last access / timestamp of some kind (to keep track of eviction
-            # do NoSQL databases do this without explicit entries?)
-
-#will need to do
+app.run(host='0.0.0.0', port=80)
