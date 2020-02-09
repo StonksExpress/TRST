@@ -41,4 +41,7 @@ class embeddings:
 
         arr_big, arr_small = (np.array(embeddings1),np.array(embeddings2)) if len(embeddings1) > len(embeddings2) else (np.array(embeddings2),np.array(embeddings1))
         similarities = [max(arr_big,key=lambda big_embed: 1 - spatial.distance.cosine(big_embed, small_embed)) for small_embed in arr_small]
-        
+
+
+def generate_keywords(document):
+    
