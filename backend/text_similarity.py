@@ -2,6 +2,8 @@ import tensorflow as tf
 import tensorflow_hub as hub
 import sklearn.metrics.pairwise as pw
 import numpy as np
+import nltk
+from newspaper import Article
 
 class embeddings:
     USE_mod_URL = "https://tfhub.dev/google/universal-sentence-encoder/2"
@@ -43,5 +45,9 @@ class embeddings:
         similarities = [max(arr_big,key=lambda big_embed: 1 - spatial.distance.cosine(big_embed, small_embed)) for small_embed in arr_small]
 
 
-def generate_keywords(document):
-    
+def generate_keywords(url):
+    article = Article(url)
+    article.download()
+    article.parse()
+    article.nlp()
+    return article.keywords
