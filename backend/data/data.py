@@ -1,5 +1,6 @@
 from typing import NewType, List
 import sqlite3
+import npumpy as np
 
 Trust = NewType('Trust', float)
 
@@ -69,7 +70,7 @@ class Document:
             fetched = cursor.fetchone()
             if not fetched: return
             (url, vector, time, source_url, source_trust) = fetched
-            return cls(Source(source_url, source_trust), url, time, (v.split(",") for v in vector.split("|")))
+            return cls(Source(source_url, source_trust), url, time, np.array(([float(c) for c in v.split(",")] for v in vector.split("|")),dtype=np.float32)
         finally:
             cursor.close()
 
@@ -77,7 +78,7 @@ class Document:
     def new(cls, source, url, time, vectors):
         cursor = database.cursor()
         try:
-            cursor.execute(f"""INSERT INTO Document(url, source, time, vectors) 
+            cursor.execute(f"""INSERT INTO Document(url, source, time, vectors)
                                 VALUES ("{url}", "{source}", "{time}", "{'|'.join(','.join(str(e) for e in v) for v in vectors)}")
                                 """)
             database.commit()
@@ -90,7 +91,7 @@ class Classification:
     url: str
     trust: Trust
     time: int
-    
+
     def __init__(self, source: Source, url: str, trust: Trust, time: int):
         self.source = source
         self.url = url
@@ -103,7 +104,7 @@ class Classification:
         try:
             cursor.execute(
                 f"""SELECT Classification.url, Classification.trust, Classification.time, Source.url, Source.trust
-                FROM Classification, Source 
+                FROM Classification, Source
                 WHERE Classification.source == Source.url AND Classification.url = \"{url}\""""
                 )
             fetched = cursor.fetchone()
@@ -119,7 +120,7 @@ class Classification:
         try:
             cursor.execute(
                 """SELECT Classification.url, Classification.trust, Classification.time, Source.url, Source.trust
-                FROM Classification, Source 
+                FROM Classification, Source
                 WHERE Classification.source == Source.url"""
                 )
             for (url, trust, time, source, source_trust) in cursor.fetchall():
@@ -131,7 +132,7 @@ class Classification:
     def new(cls, source, url, trust, time):
         cursor = database.cursor()
         try:
-            cursor.execute(f"""INSERT INTO Classification(source, url, trust, time) 
+            cursor.execute(f"""INSERT INTO Classification(source, url, trust, time)
                             VALUES ("{source}", "{url}", "{trust}", "{time}")
                             """)
             database.commit()
