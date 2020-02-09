@@ -3,9 +3,6 @@ import sys
 import requests
 import re
 
-
-
-
 def scrape(websiteName):
     response = requests.get(websiteName)
     soup = BeautifulSoup(response.content, "html.parser")
@@ -40,6 +37,10 @@ def scrape(websiteName):
         date_tag = 'span'
     else:
         print("not predefined website")
+        for a in soup.findAll('p'):
+            elements.append(a.text)
+        return elements
+
 
     # with open("temp.txt", 'w') as file:
     #     file.write(soup.prettify().encode('utf-8'))
@@ -58,10 +59,13 @@ def scrape(websiteName):
 
 def elements_print(elements):
     for el in elements:
-        print(el["title"])
-        print(el["newssite"])
-        print(el["date"])
-        print('\n')
+        if isinstance(el, dict): # for predefined websites
+            print(el["title"])
+            print(el["newssite"])
+            print(el["date"])
+            print('\n')
+        else: # for not predefined websites
+            print(el)
 
 
 websiteName = sys.argv[1]
