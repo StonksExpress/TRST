@@ -5,6 +5,8 @@ import numpy as np
 import nltk
 import math
 from newspaper import Article
+import data.data as dat
+from urllib.parse import urlparse
 
 class embeddings:
     USE_mod_URL = "https://tfhub.dev/google/universal-sentence-encoder/2"
@@ -82,9 +84,52 @@ def total_similarity(timestamp,embedding,embeddings,embeddings_times,sf_norm=0.1
 
     # TODO: return something
     # scaled similarities are the exponential curved and time density scaled values
-    # results similarity is simply the max pairwise similarities between each document pair 
+    # results similarity is simply the max pairwise similarities between each document pair
 def get_score(url):
     #check if present in db
         #return db value if true
+    result = dat.Classification.retrieve(url)
+    if(results is not None): return result.trust
     #else
     #
+    # keywords = scrapeAnalyse(url, False, None)
+    text,keywords,date = scrapeAnalyse(url, False, None)
+    my_data = scrapeAnalyse(None, True, keywords)
+    #mydata is a list of dictionaries
+    #   each dictionary contains 3 fields:
+    #   -text
+    #   -date
+    #   -url
+    embed_batch=[]
+    for dict in my_data:
+        doc_embed = dat.document.retrieve(dict['url'])
+        if (doc_embed is not None):
+            dict['embed'] = doc_embed.vector
+            dict['stored'] = True
+        else:
+            embed_batch.append(dict['text'])
+            dict['stored'] = False
+    embed_batch.append(text)
+
+    embeddings = USE_embedding(embed_batch)
+    for dict in my_data:
+        if dict['embed'].get() is None:
+            dict['embed'] = embeddings[0]
+            embeddings.remove(0)
+
+
+    for dict in my_data:
+        if dict['stored'] is False:
+            parsed_uri = urlparse(dict['url'])
+            domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+            dat.document.new(domain,dict['url'],dict['time'],dict['embed'])
+
+
+    searched_embeddings = [x['embed'] for x in my_data]
+    searched_timestamps = [x['date'] for x in my_data]
+    trust = total_similarity(date,embeddings[0],searched_embeddings,searched_timestamps)
+
+    parsed_uri = urlparse(url)
+    domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+    dat.document.new(domain,url,date,embeddings[0])
+    dat.Classification.new(domain,url,trust,date)
