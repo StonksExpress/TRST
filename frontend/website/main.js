@@ -60,7 +60,8 @@ function drawScale(value, rgb) {
 function drawNumber(number) {
     ctx.font = "30px Helvetica";
     ctx.fillStyle = "black";
-    ctx.fillText(`${number}`, 233, 400); 
+    ctx.textAlign = "center";
+    ctx.fillText(`${number}`, 250, 400); 
 }
 
 function animateScale(scale, frame) {
@@ -69,12 +70,12 @@ function animateScale(scale, frame) {
         return;
     }
     const delta = scale - lastVal;
-    const angle = delta * ((maxFrames - frame) / maxFrames) + lastVal;
+    const angle = delta * Math.sin (((maxFrames - frame) / maxFrames) / 2 * Math.PI) + lastVal;
     const red = (1 - angle) * 255;
     const green = angle * 255;
     requestAnimationFrame(() => {
         drawScale(angle, `rgb(${red}, ${green}, 0)`);
-        drawNumber(scale);
+        drawNumber(parseInt(scale * 100));
         animateScale(scale, --frame);
     });
 }
